@@ -16,6 +16,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
+          distribution: 'temurin'  # <-- ДОБАВЬ ЭТУ СТРОЧКУ!
 
       - name: Run a simple test (Hello CI!)
         run: echo "🎉 Ура! Мой первый CI pipeline запущен на GitHub!"
