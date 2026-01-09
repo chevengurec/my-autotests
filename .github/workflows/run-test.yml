@@ -1,3 +1,4 @@
+  yaml
   name: Run Selenium Tests
 
   on:
@@ -18,18 +19,42 @@
             java-version: '11'
             distribution: 'temurin'
 
-        # 🔥 ВАЖНО: Устанавливаем Chrome для CI
-        - name: Install Chrome
+        # 🔥 ВАЖНО: Правильная установка Chrome для GitHub Actions
+        - name: Install Chrome and ChromeDriver
           run: |
+            echo "=== Installing Chrome for CI ==="
             sudo apt-get update
-            sudo apt-get install -y wget unzip
-            wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-            echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+            sudo apt-get install -y wget gnupg
+            
+            # Добавляем репозиторий Google Chrome
+            wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-chrome-keyring.gpg
+            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+            
             sudo apt-get update
             sudo apt-get install -y google-chrome-stable
+            
+            # Проверяем установку
+            echo "=== Chrome version ==="
             google-chrome --version
+            
+            # Устанавливаем ChromeDriver совместимой версии
+            echo "=== Installing ChromeDriver ==="
+            CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+            echo "Chrome major version: $CHROME_VERSION"
+            
+            # Устанавливаем правильную версию ChromeDriver через WebDriverManager
+            # Это произойдет автоматически при запуске тестов
+            
+            echo "=== System info ==="
+            uname -a
+            lsb_release -a
+        
+        # Устанавливаем переменную окружения для совместимости версий
+        - name: Set ChromeDriver version
+          run: |
+            echo "CHROME_VERSION_MAJOR=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)" >> $GITHUB_ENV
 
-        # Кэширование Maven dependencies для скорости
+        # Кэширование Maven dependencies
         - name: Cache Maven dependencies
           uses: actions/cache@v3
           with:
@@ -38,10 +63,17 @@
             restore-keys: |
               maven-
 
-        # Запуск тестов с подробными логами
-        - name: Run tests with detailed logging
+        # Запускаем тесты с verbose логированием
+        - name: Run tests with debug info
           run: |
-            echo "=== Running tests in CI mode ==="
-            mvn test -Dtest=FirstTest -Dselenium.headless=true -Dbrowser=chrome-ci
-          env:
-            CI: true  # 🔥 Устанавливаем переменную окружения CI=true
+            echo "=== Running tests in CI ==="
+            echo "CHROME_VERSION_MAJOR: ${{ env.CHROME_VERSION_MAJOR }}"
+            
+            # Запускаем тесты с максимальным логированием
+            mvn test \
+              -Dchrome.version=${{ env.CHROME_VERSION_MAJOR }} \
+              -Dwebdriver.chrome.whitelistedIps= \
+              -Dwebdriver.chrome.args="--no-sandbox,--disable-dev-shm-usage,--remote-allow-origins=*" \
+              -Dchrome.options.args="--headless=new,--no-sandbox,--disable-dev-shm-usage,--window-size=1920,1080,--remote-allow-origins=*" \
+              -Dselenium.LOGGER.level=ALL \
+              -e  # Включить подробные логи Maven
