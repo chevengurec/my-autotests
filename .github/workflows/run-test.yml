@@ -1,40 +1,47 @@
-name: Run Selenium Tests
+  name: Run Selenium Tests
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  on:
+    push:
+      branches: [ main ]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+  jobs:
+    test:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'temurin'
+        - name: Set up Java
+          uses: actions/setup-java@v3
+          with:
+            java-version: '11'
+            distribution: 'temurin'
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            maven-
+        # 🔥 ВАЖНО: Устанавливаем Chrome для CI
+        - name: Install Chrome
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y wget unzip
+            wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+            echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+            sudo apt-get update
+            sudo apt-get install -y google-chrome-stable
+            google-chrome --version
 
-      - name: Run tests with Maven
-        run: mvn test
+        # Кэширование Maven dependencies для скорости
+        - name: Cache Maven dependencies
+          uses: actions/cache@v3
+          with:
+            path: ~/.m2
+            key: maven-${{ hashFiles('**/pom.xml') }}
+            restore-keys: |
+              maven-
 
-      - name: Upload test results
-        if: always()  # Загружает артефакты даже если тесты упали
-        uses: actions/upload-artifact@v4  # ← ИЗМЕНИЛОСЬ v3 → v4
-        with:
-          name: test-results
-          path: target/allure-results/
-          retention-days: 7  # Артефакты хранятся 7 дней (можно изменить)
+        # Запуск тестов с подробными логами
+        - name: Run tests with detailed logging
+          run: |
+            echo "=== Running tests in CI mode ==="
+            mvn test -Dtest=FirstTest -Dselenium.headless=true -Dbrowser=chrome-ci
+          env:
+            CI: true  # 🔥 Устанавливаем переменную окружения CI=true
