@@ -32,8 +32,9 @@ jobs:
         run: mvn test
 
       - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v3
+        if: always()  # Загружает артефакты даже если тесты упали
+        uses: actions/upload-artifact@v4  # ← ИЗМЕНИЛОСЬ v3 → v4
         with:
           name: test-results
           path: target/allure-results/
+          retention-days: 7  # Артефакты хранятся 7 дней (можно изменить)
