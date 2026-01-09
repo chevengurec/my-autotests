@@ -1,0 +1,8 @@
+tests\DataDrivenLoginTests.class
+pages\LoginPage.class
+tests\LoginTests.class
+tests\LoginTest1.class
+tests\BaseTest.class
+utils\ConfigReader.class
+tests\FirstTest.class
+utils\DriverManager.class
