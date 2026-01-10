@@ -1,0 +1,121 @@
+# ДЕНЬ 13: УЧИМСЯ ПОНИМАТЬ CI/CD
+# Этот файл - НЕ для автоматизации, а для обучения
+# Мы будем его менять и смотреть что происходит
+
+name: CI Learning Pipeline
+
+# РАЗДЕЛ 1: КОГДА запускать?
+# "on:" = триггеры (когда запускать pipeline)
+on:
+  # Запускать при пуше в ветку main
+  push:
+    branches: [ main ]
+
+  # ЗАДАНИЕ: Можно добавить запуск вручную из интерфейса GitHub
+  workflow_dispatch:  # Раскомментируй эту строку!
+
+# РАЗДЕЛ 2: ЧТО делать?
+jobs:
+  # Задача 1: Изучаем виртуальную машину
+  explore-machine:
+    # На какой ОС запускаем (ubuntu, windows, macos)
+    runs-on: ubuntu-latest
+
+    # Шаги выполнения
+    steps:
+      # ШАГ 1: Получить код с GitHub
+      - name: Step 1 - Get my code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1  # Берем только последний коммит
+
+      # ШАГ 2: Посмотреть где мы находимся
+      - name: Step 2 - Where am I?
+        run: |
+          echo "=== ИССЛЕДУЕМ ВИРТУАЛЬНУЮ МАШИНУ ==="
+          echo "Текущая папка:"
+          pwd
+          echo "Содержимое папки:"
+          ls -la
+          echo "Кто я?:"
+          whoami
+
+      # ШАГ 3: Посмотреть системную информацию
+      - name: Step 3 - System info
+        run: |
+          echo "=== ИНФОРМАЦИЯ О СИСТЕМЕ ==="
+          echo "Операционная система:"
+          uname -a
+          echo "Версия Ubuntu:"
+          lsb_release -a 2>/dev/null || echo "lsb_release not installed"
+          echo "Память:"
+          free -h
+          echo "Диск:"
+          df -h
+
+      # ШАГ 4: Установить Java и проверить
+      - name: Step 4 - Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      # ШАГ 5: Проверить что установилось
+      - name: Step 5 - Verify installations
+        run: |
+          echo "=== ПРОВЕРКА УСТАНОВКИ ==="
+          echo "Java version:"
+          java -version
+          echo "Java home:"
+          echo $JAVA_HOME
+          echo "Path:"
+          echo $PATH | tr ':' '\n'
+
+      # ШАГ 6: Поиграть с переменными окружения
+      - name: Step 6 - Environment variables
+        run: |
+          echo "=== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ==="
+          echo "CI environment (есть ли?): $CI"
+          echo "GitHub Actions variables:"
+          echo "GITHUB_WORKFLOW: $GITHUB_WORKFLOW"
+          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo "GITHUB_SHA: $GITHUB_SHA (это хэш твоего коммита!)"
+
+      # ШАГ 7: Создать простой Java файл и запустить
+      - name: Step 7 - Create and run Java
+        run: |
+          echo "=== СОЗДАЕМ JAVA ПРОГРАММУ ==="
+          cat > HelloCI.java << 'EOF'
+          public class HelloCI {
+              public static void main(String[] args) {
+                  System.out.println("🎉 Привет из CI pipeline!");
+                  System.out.println("Я запущен автоматически GitHub Actions");
+                  System.out.println("Мой класс: " + HelloCI.class.getName());
+                  System.out.println("Аргументы: " + java.util.Arrays.toString(args));
+          
+                  // Простая проверка
+                  if (System.getenv("CI") != null) {
+                      System.out.println("✅ Я в CI окружении!");
+                  } else {
+                      System.out.println("⚠️ Я НЕ в CI окружении");
+                  }
+              }
+          }
+          EOF
+          
+          echo "Компилируем..."
+          javac HelloCI.java
+          echo "Запускаем..."
+          java HelloCI "Аргумент_из_CI"
+
+      # ШАГ 8: Финал - успех
+      - name: Step 8 - Success
+        run: |
+          echo " "
+          echo "=".repeat(50)
+          echo "🎊 ПОЗДРАВЛЯЮ! Ты только что:"
+          echo "1. Запустил виртуальную машину в облаке"
+          echo "2. Установил Java"
+          echo "3. Запустил свою программу"
+          echo "4. Все это сделал AUTOMAGICALLY! 🪄"
+          echo "=".repeat(50)
