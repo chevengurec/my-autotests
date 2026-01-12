@@ -1,0 +1,23 @@
+name: Always Green CI
+
+on:
+  workflow_dispatch: #Только ручной запуск
+
+jobs:
+  success:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Шаг 1 - Всегда успех
+      run: |
+        echo "День 15: Этот CI всегда зеленый"
+        echo "Потому что я запускаю только echo команды"
+
+    - name: Шаг 2 - Информация о среде
+      run: |
+        echo "=== Информация ==="
+        echo "Дата: $(date)"
+        echo "Мы в CI: $CI"
+        echo "Название workflow: $GITHUB_WORKFLOW"
+        
+        
+
