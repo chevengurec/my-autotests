@@ -4,20 +4,33 @@ on:
   workflow_dispatch: #Только ручной запуск
 
 jobs:
-  success:
+  rub-tests:
     runs-on: ubuntu-latest
     steps:
-    - name: Шаг 1 - Всегда успех
-      run: |
-        echo "День 15: Этот CI всегда зеленый"
-        echo "Потому что я запускаю только echo команды"
+    - name: Шаг 1 - Копируем код
+      uses: actions/checkout@v3
 
-    - name: Шаг 2 - Информация о среде
+    - name: Шаг 2 - Устанавливаем Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: 3. Запускаем AlwaysPassTest
       run: |
-        echo "=== Информация ==="
-        echo "Дата: $(date)"
-        echo "Мы в CI: $CI"
-        echo "Название workflow: $GITHUB_WORKFLOW"
+         echo "🎯 День 16: Запускаю AlwaysPassTest в CI..."
+         echo "Компилируем проект..."
+         mvn compile -q
+
+         echo "Запускаем тесты..."
+         mvn test -Dtest=AlwaysPassTest
+      
+         echo " "
+         echo "✅ УСПЕХ! AlwaysPassTest прошел в CI!"
+         echo "Это значит:"
+         echo "1. Java работает в CI"
+         echo "2. Maven работает в CI"
+         echo "3. Твои тесты могут запускаться автоматически!"  
         
         
 
