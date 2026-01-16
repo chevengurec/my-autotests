@@ -1,7 +1,8 @@
+
 name: Install Chrome in CI
 
 on:
-  workflow_dispatch:  # Только ручной запуск
+  workflow_dispatch:
 
 jobs:
   install-chrome:
@@ -9,39 +10,35 @@ jobs:
 
     steps:
       - name: 1. Показываем стартовое сообщение
-        run:
-            echo "🎯 День 19: Устанавливаем Chrome в CI"
+        run: |
+         echo "🎯 День 19: Устанавливаем Chrome в CI"
 
       - name: 2. Устанавливаем Chrome
         run: |
-            echo "Шаг 1: Обновляем список пакетов..."
-            sudo apt-get update
-            
-            echo "Шаг 2: Устанавливаем Chrome..."
-            sudo apt-get install -y wget
-            
-            # Скачиваем и добавляем ключ Google
-            wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-            
-            # Добавляем репозиторий Chrome
-            echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-            
-            # Устанавливаем Chrome
-            sudo apt-get update
-            sudo apt-get install -y google-chrome-stable
+          echo "Шаг 1: Обновляем список пакетов..."
+          sudo apt-get update
           
+          echo "Шаг 2: Устанавливаем Chrome..."
+          sudo apt-get install -y wget
+          
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
       - name: 3. Проверяем что Chrome установился
         run: |
-            echo "✅ Проверяем установку..."
-            echo "Версия Chrome:"
-            google-chrome --version
-        
-            echo "Где находится Chrome:"
-            which google-chrome
+          echo "✅ Проверяем установку..."
+          echo "Версия Chrome:"
+          google-chrome --version
+          
+          echo "Где находится Chrome:"
+          which google-chrome
 
       - name: 4. Финальное сообщение
         run: |
-            echo " "
-            echo "🎉 УСПЕХ! Chrome установлен в CI!"
-            echo "Завтра мы запустим в нем тесты."
+          echo " "
+          echo "🎉 УСПЕХ! Chrome установлен в CI!"
+          echo "Завтра мы запустим в нем тесты."
