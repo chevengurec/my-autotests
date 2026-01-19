@@ -28,4 +28,4 @@ jobs:
       - name: Run My First UI Test
         run: |
           echo "🎉 ЗАПУСКАЮ ТВОЙ ПЕРВЫЙ UI ТЕСТ!"
-          mvn test -Dtest=MyFirstUnitTestr
+          mvn test -Dtest=MyFirstUnitTest
